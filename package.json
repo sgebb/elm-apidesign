@@ -1,0 +1,30 @@
+{
+  "name": "Elm-Init",
+  "version": "1.0.0",
+  "description": "Get up and running with Elm",
+  "main": "dist/index.html",
+  "scripts": {
+    "build": "gulp default",
+    "dev": "gulp dev",
+    "publish": "npm install elm elm-format && npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/matsroedseth/elm-init.git"
+  },
+  "author": "Mats Rødseth",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/matsroedseth/elm-init/issues"
+  },
+  "homepage": "https://github.com/matsroedseth/elm-init#readme",
+  "dependencies": {
+    "elm-format": "^0.8.2",
+    "browser-sync": "^2.26.7",
+    "del": "^5.1.0",
+    "gulp": "^4.0.2",
+    "gulp-connect": "^5.7.0",
+    "gulp-elm": "^0.8.2",
+    "gulp-plumber": "^1.2.1"
+  }
+}

@@ -1,0 +1,15 @@
+# elm-package generated files
+elm-stuff
+
+# elm-repl generated files
+repl-temp-*
+
+# elm-live generated files
+index.html
+!src/*
+
+# output folder
+dist
+
+# node_modules
+node_modules
