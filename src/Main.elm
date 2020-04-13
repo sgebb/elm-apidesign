@@ -20,15 +20,18 @@ main =
         , subscriptions = subscriptions
         }
 
+-- TEST
 
-
+testResource : Resource
+testResource = 
+    Resource (SubResources [emptyResource "underressurs"] ) "hovedressurs"
 -- Model
 
 
 init : () -> ( Model, Cmd Msg )
 init _ =
     ( {
-        ressurser = [], 
+        ressurser = [testResource], 
         input = ""
     }
     , Cmd.none
@@ -42,18 +45,20 @@ type alias Model =
 
 type alias Resource = 
     {
-        subrressurser : SubResources,
+        subressurser : SubResources,
         navn: String
     }
 
 type SubResources = 
-    SubResource (List Resource)
+    SubResources (List Resource)
 
+emptyResource : String -> Resource
 emptyResource name = 
     Resource emptySubResources name
 
+emptySubResources : SubResources
 emptySubResources =
-    SubResource []
+    SubResources []
 -- Update
 
 
@@ -112,17 +117,20 @@ viewResources resources =
         ul [] (List.map viewResource resources)
     ]
 
+viewSubressurser : SubResources -> Html Msg
+viewSubressurser subresources =
+    case subresources of
+        SubResources resources ->
+            viewResources resources
+
+            
+    
+
 viewResource : Resource -> Html Msg
 viewResource resource = 
     li []
     [
-        text resource.navn
+        text resource.navn,
+        text ":",
+        viewSubressurser resource.subressurser
     ]
-
-toHtmlList : List String -> Html msg
-toHtmlList strings =
-  ul [] (List.map toLi strings)
-
-toLi : String -> Html msg
-toLi s = 
-  li [] [ text s ]
