@@ -133,8 +133,8 @@ withoutResource ressurser removed =
             else Resources (List.map (resourceWithRemovedSubresource removed) res)
 
 resourceWithRemovedSubresource : Resource -> Resource -> Resource
-resourceWithRemovedSubresource original removed =
-    {original | subressurser = withoutResource original.subressurser removed}
+resourceWithRemovedSubresource self removed =
+    {self | subressurser = withoutResource self.subressurser removed}
 
 
 withResource : Resources -> Resource -> Resources
