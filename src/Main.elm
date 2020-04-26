@@ -24,14 +24,14 @@ main =
 
 testResource : Resource
 testResource = 
-    Resource (SubResources [emptyResource "underressurs"] ) "hovedressurs"
+    Resource (Resources [emptyResource "underressurs"] ) "hovedressurs"
 -- Model
 
 
 init : () -> ( Model, Cmd Msg )
 init _ =
     ( {
-        ressurser = [testResource], 
+        ressurser = Resources([testResource]), 
         input = "",
         movingResource = Maybe.Nothing
     }
@@ -40,27 +40,27 @@ init _ =
 
 
 type alias Model =
-    { ressurser : List Resource,
+    { ressurser : Resources,
       input : String,
       movingResource : Maybe Resource
     }
 
 type alias Resource = 
     {
-        subressurser : SubResources,
+        subressurser : Resources,
         navn: String
     }
 
-type SubResources = 
-    SubResources (List Resource)
+type Resources = 
+    Resources (List Resource)
 
 emptyResource : String -> Resource
 emptyResource name = 
-    Resource emptySubResources name
+    Resource emptyResources name
 
-emptySubResources : SubResources
-emptySubResources =
-    SubResources []
+emptyResources : Resources
+emptyResources =
+    Resources []
 -- Update
 
 
@@ -81,7 +81,7 @@ update msg model =
         KeyDown key ->
             if key == 13 then
                 ({ model | 
-                    ressurser = emptyResource model.input :: model.ressurser,
+                    ressurser = withResource model.ressurser (emptyResource model.input),
                     input = "" }, Cmd.none)
             else
                 (model, Cmd.none)
@@ -94,37 +94,54 @@ update msg model =
         DragOver ->
             (model, Cmd.none)
 
-moveResource : List Resource -> Maybe Resource -> Resource -> List Resource
+moveResource : Resources -> Maybe Resource -> Resource -> Resources
 moveResource alleRessurser ressurs destination =
-        case ressurs of 
-            Just res ->
-                let
-                    newRessurser = List.filter (areNotTheSame res) alleRessurser
-                    withoutDest = List.filter (areNotTheSame destination) newRessurser
-                    destinationAfterMoved = 
-                        case destination.subressurser of
-                            SubResources sub ->
-                                {destination | subressurser = SubResources (res :: sub)}
-                in
-                    destinationAfterMoved :: withoutDest
-            _ ->
-                alleRessurser
+    case ressurs of 
+        Just res ->
+            let
+                newRessurser = withoutResource alleRessurser res
+                withoutDest = withoutResource newRessurser destination
+                destinationAfterMoved = 
+                    case destination.subressurser of
+                        Resources sub ->
+                            {destination | subressurser = Resources (res :: sub)}
+            in
+                withResource withoutDest destinationAfterMoved
+        _ ->
+            alleRessurser
             
+withoutResource : Resources -> Resource -> Resources
+withoutResource ressurser removed =
+    case ressurser of 
+        Resources res ->
+            if List.any (areTheSame removed) res
+            then Resources (List.filter (areNotTheSame removed) res)
+            else Resources (List.map (resourceWithRemovedSubresource removed) res)
+
+withResource : Resources -> Resource -> Resources
+withResource ressurser added =
+    case ressurser of
+        Resources res ->
+            Resources (added :: res)
+
+resourceWithRemovedSubresource : Resource -> Resource -> Resource
+resourceWithRemovedSubresource original removed =
+    {original | subressurser = withoutResource original.subressurser removed}
 
 areTheSame : Resource -> Resource -> Bool
 areTheSame first other =     
-        first.navn == other.navn &&  equalAmountSubResources first.subressurser other.subressurser
+        first.navn == other.navn &&  equalAmountResources first.subressurser other.subressurser
 
 areNotTheSame : Resource -> Resource -> Bool
 areNotTheSame first other = 
     not (areTheSame first other)
 
-equalAmountSubResources : SubResources -> SubResources -> Bool
-equalAmountSubResources first other =
+equalAmountResources : Resources -> Resources -> Bool
+equalAmountResources first other =
     case first of
-        SubResources fi->
+        Resources fi->
             case other of 
-                SubResources ot -> 
+                Resources ot -> 
                     List.length fi == List.length ot
 
 -- Subscriptions
@@ -169,18 +186,15 @@ view model =
             input [onKeyDown KeyDown, placeholder "A word", value model.input, onInput UpdateInput][]
         ]
 
-viewResources : List Resource -> Html Msg
+viewResources : Resources -> Html Msg
 viewResources resources =
-    div[]
-    [
-        ul [] (List.map viewResource resources)
-    ]
+    case resources of 
+        Resources res ->
+            div[]
+            [
+                ul [] (List.map viewResource res)
+            ]
 
-viewSubressurser : SubResources -> Html Msg
-viewSubressurser subresources =
-    case subresources of
-        SubResources resources ->
-            viewResources resources
 
 viewResource : Resource -> Html Msg
 viewResource resource =
@@ -196,6 +210,6 @@ viewResource resource =
         [
             text resource.navn,
             text ":",
-            viewSubressurser resource.subressurser
+            viewResources resource.subressurser
         ]
     ]
