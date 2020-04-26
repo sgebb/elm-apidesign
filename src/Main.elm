@@ -61,6 +61,7 @@ emptyResource name =
 emptyResources : Resources
 emptyResources =
     Resources []
+
 -- Update
 
 
@@ -94,43 +95,58 @@ update msg model =
         DragOver ->
             (model, Cmd.none)
 
+
+-- Help
+
 moveResource : Resources -> Maybe Resource -> Resource -> Resources
-moveResource alleRessurser ressurs destination =
-    case ressurs of 
-        Just res ->
+moveResource alleRessurser mover destination =
+    case mover of 
+        Just movingRes ->
             let
-                newRessurser = withoutResource alleRessurser res
-                withoutDest = withoutResource newRessurser destination
-                destinationAfterMoved = 
-                    case destination.subressurser of
-                        Resources sub ->
-                            {destination | subressurser = Resources (res :: sub)}
+                withoutRemoved = withoutResource alleRessurser movingRes
             in
-                withResource withoutDest destinationAfterMoved
+                withResourceInTarget withoutRemoved movingRes destination
         _ ->
             alleRessurser
-            
+
+withResourceInTarget : Resources -> Resource -> Resource -> Resources
+withResourceInTarget ressurser added targetResource =
+    case ressurser of
+        Resources res ->
+            Resources (List.map (addToResourceIfTarget added targetResource) res)
+
+addToResourceIfTarget : Resource -> Resource -> Resource -> Resource
+addToResourceIfTarget added target self =
+    if areTheSame target self
+        then {self | subressurser = withResource self.subressurser added}
+    else 
+        case self.subressurser of 
+            Resources res ->
+                {self | subressurser = Resources (List.map (addToResourceIfTarget added target) res)}
+
 withoutResource : Resources -> Resource -> Resources
 withoutResource ressurser removed =
     case ressurser of 
         Resources res ->
             if List.any (areTheSame removed) res
-            then Resources (List.filter (areNotTheSame removed) res)
+                then Resources (List.filter (areNotTheSame removed) res)
             else Resources (List.map (resourceWithRemovedSubresource removed) res)
-
-withResource : Resources -> Resource -> Resources
-withResource ressurser added =
-    case ressurser of
-        Resources res ->
-            Resources (added :: res)
 
 resourceWithRemovedSubresource : Resource -> Resource -> Resource
 resourceWithRemovedSubresource original removed =
     {original | subressurser = withoutResource original.subressurser removed}
 
+
+withResource : Resources -> Resource -> Resources
+withResource ressurser added  =
+    case ressurser of
+        Resources res ->
+            Resources ( added :: res)
+
 areTheSame : Resource -> Resource -> Bool
 areTheSame first other =     
-        first.navn == other.navn &&  equalAmountResources first.subressurser other.subressurser
+    first == other
+        -- trenger en id?
 
 areNotTheSame : Resource -> Resource -> Bool
 areNotTheSame first other = 
