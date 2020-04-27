@@ -1,5 +1,6 @@
-html {
+html,body {
     font-size: 14px;
+    height: 100%;
   }
   @media (min-width: 768px) {
     html {
@@ -7,15 +8,23 @@ html {
     }
   }
   
-  .container {
-    max-width: 960px;
-  }
-  
-  .border-top { border-top: 1px solid #e5e5e5; }
-  .border-bottom { border-bottom: 1px solid #e5e5e5; }
-  
-  .box-shadow { box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .05); }
-  
-body,html {
-    height: 100%;
-  }
+
+.runway{
+  max-width: 960px;
+  height: 100%;
+  display:flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-around;
+}
+
+.midbox{
+  height: 300px;
+}
+
+.topbox{
+  align-items: flex-start;
+}
+
+.botbox {
+}

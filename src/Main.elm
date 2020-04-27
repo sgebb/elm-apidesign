@@ -24,13 +24,14 @@ main =
 
 testResource : Resource
 testResource = 
-    Resource (Resources [emptyResource "underressurs"] ) "hovedressurs"
+    Resource (Resources [emptyResource "underressurs" -1] ) "hovedressurs" -2
 -- Model
 
 
 init : () -> ( Model, Cmd Msg )
 init _ =
     ( {
+        idGenerator = 0,
         ressurser = Resources([testResource]), 
         input = "",
         movingResource = Maybe.Nothing
@@ -40,7 +41,9 @@ init _ =
 
 
 type alias Model =
-    { ressurser : Resources,
+    { 
+      idGenerator : Int,
+      ressurser : Resources,
       input : String,
       movingResource : Maybe Resource
     }
@@ -48,15 +51,16 @@ type alias Model =
 type alias Resource = 
     {
         subressurser : Resources,
-        navn: String
+        navn: String,
+        id : Int
     }
 
 type Resources = 
     Resources (List Resource)
 
-emptyResource : String -> Resource
-emptyResource name = 
-    Resource emptyResources name
+emptyResource : String -> Int -> Resource
+emptyResource name id = 
+    Resource emptyResources name id
 
 emptyResources : Resources
 emptyResources =
@@ -80,9 +84,10 @@ update msg model =
         UpdateInput word -> 
             ( {model | input = word}, Cmd.none)
         KeyDown key ->
-            if key == 13 then
-                ({ model | 
-                    ressurser = withResource model.ressurser (emptyResource model.input),
+            if key == 13 && model.input /= "" then
+                ({ model |
+                    ressurser = withResource model.ressurser (emptyResource model.input model.idGenerator),
+                    idGenerator = model.idGenerator + 1,
                     input = "" }, Cmd.none)
             else
                 (model, Cmd.none)
@@ -91,7 +96,12 @@ update msg model =
         CancelMove ->
             ({model | movingResource = Nothing}, Cmd.none)
         DropOn destination ->
-            ({model | ressurser = moveResource model.ressurser model.movingResource destination, movingResource = Nothing} , Cmd.none)
+            case model.movingResource of 
+            Just res ->
+                if areTheSame res destination
+                then ({model | movingResource = Nothing}, Cmd.none)
+                else ({model | ressurser = moveResource model.ressurser model.movingResource destination, movingResource = Nothing} , Cmd.none)
+            Nothing -> ({model | movingResource = Nothing}, Cmd.none)
         DragOver ->
             (model, Cmd.none)
 
@@ -145,8 +155,7 @@ withResource ressurser added  =
 
 areTheSame : Resource -> Resource -> Bool
 areTheSame first other =     
-    first == other
-        -- trenger en id?
+    first.id == other.id
 
 areNotTheSame : Resource -> Resource -> Bool
 areNotTheSame first other = 
@@ -195,20 +204,21 @@ onDrop msg =
 
 view : Model -> Html Msg
 view model =
-    div [class "container d-flex h-100"][
-        div[class "row align-self-center w-100"][
-            div[class "col-8 mx-auto"][
-                div[][
+    div [][
+        div[][
+            div[class "runway"][
+                div[class "topbox"][
                     viewResources model.ressurser
                 ],
-                div[][ 
+                div[class "midbox"][ 
                     h1[][
                         text "Start by writing some words.."
                     ],
                     div[][
                         input [onKeyDown KeyDown, placeholder "A word", value model.input, onInput UpdateInput][]
                     ]
-                ]
+                ],
+                div[class "botbox"][]
             ]
         ]
     ]
