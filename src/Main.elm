@@ -195,12 +195,23 @@ onDrop msg =
 
 view : Model -> Html Msg
 view model =
-    div []
-        [
-            viewResources model.ressurser,
-            h1 [][text "Start by writing some words.."],
-            input [onKeyDown KeyDown, placeholder "A word", value model.input, onInput UpdateInput][]
+    div [class "container d-flex h-100"][
+        div[class "row align-self-center w-100"][
+            div[class "col-8 mx-auto"][
+                div[][
+                    viewResources model.ressurser
+                ],
+                div[][ 
+                    h1[][
+                        text "Start by writing some words.."
+                    ],
+                    div[][
+                        input [onKeyDown KeyDown, placeholder "A word", value model.input, onInput UpdateInput][]
+                    ]
+                ]
+            ]
         ]
+    ]
 
 viewResources : Resources -> Html Msg
 viewResources resources =
@@ -225,7 +236,6 @@ viewResource resource =
             li []
         [
             text resource.navn,
-            text ":",
             viewResources resource.subressurser
         ]
     ]
